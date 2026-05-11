@@ -290,29 +290,44 @@ body.loaded #app{display:block}
   display:flex;align-items:center;gap:8px;
 }
 .section-title .emoji{font-size:18px}
-.hourly-scroll-wrap{padding:0 16px 16px}
-.hourly-scroll{
-  display:flex;gap:10px;overflow-x:auto;
-  -webkit-overflow-scrolling:touch;
-  scroll-snap-type:x mandatory;
-  padding:4px 8px 12px;
-  scroll-behavior:smooth;
-  -ms-overflow-style:none;scrollbar-width:none;
+/* ===== 12小时折线图 ===== */
+.hourly-chart-wrap{
+  margin:0 16px 8px;background:var(--bg-card);
+  border-radius:var(--radius-md);padding:12px 8px 4px;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:var(--shadow-card);position:relative;
 }
-.hourly-card{
-  flex:0 0 80px;scroll-snap-align:start;
-  background:var(--bg-card);border-radius:var(--radius-md);
-  padding:14px 8px;text-align:center;
+#hourly-canvas{width:100%;height:240px;display:block;touch-action:none}
+.hourly-chart-hint{text-align:center;font-size:12px;color:var(--text-gray);padding:2px 0 6px;opacity:0.7}
+
+/* 逐小时详情面板 */
+.hourly-detail-panel{
+  margin:0 16px 8px;padding:14px 18px;
+  background:linear-gradient(135deg,rgba(255,255,255,0.9),rgba(240,248,252,0.9));
+  border-radius:var(--radius-md);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   box-shadow:var(--shadow-card);
-  min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
-  transition:transform 0.2s;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  animation:fadeInUp 0.25s ease;
 }
-.hourly-card:active{transform:scale(0.95)}
-.hourly-card .time{font-size:13px;color:var(--text-gray)}
-.hourly-card .icon{font-size:24px;margin:4px 0}
-.hourly-card .temp{font-size:16px;font-weight:600}
-.hourly-card .rain-chance{font-size:11px;color:var(--primary-dark);display:flex;align-items:center;gap:2px}
+.hdp-left{display:flex;align-items:center;gap:8px}
+.hdp-time{font-size:15px;font-weight:600;white-space:nowrap}
+.hdp-icon{font-size:32px}
+.hdp-center{flex:1;min-width:80px}
+.hdp-temp{font-size:22px;font-weight:600}
+.hdp-desc{font-size:13px;color:var(--text-gray);margin-top:2px}
+.hdp-stats{display:flex;gap:10px;font-size:13px;color:var(--text-gray);flex-wrap:wrap}
+
+/* 天气变化总结 */
+.hourly-events{
+  margin:0 16px 12px;padding:12px 16px;
+  background:var(--bg-card);border-radius:var(--radius-md);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:var(--shadow-card);display:none;
+}
+.events-title{font-size:14px;font-weight:600;margin-bottom:8px;color:var(--primary-dark)}
+.event-item{font-size:13px;color:var(--text-gray);padding:4px 0;padding-left:4px;line-height:1.5}
+.event-item::before{content:'▸ ';color:var(--primary)}
 
 /* ===== 今日概述卡片 ===== */
 .overview-grid{
@@ -484,7 +499,7 @@ body.loaded #app{display:block}
 
 /* ===== iOS 特定适配 ===== */
 @supports (-webkit-touch-callout:none){
-  .hourly-scroll{-webkit-overflow-scrolling:touch}
+  #hourly-canvas{touch-action:none}
   #panel-14day{-webkit-overflow-scrolling:touch}
   body{cursor:pointer}
 }
@@ -498,7 +513,9 @@ body.loaded #app{display:block}
   .weather-hero{min-height:320px;margin:0 40px 20px}
   .weather-hero-temp{font-size:96px}
   .weather-hero-icon{font-size:88px}
-  .hourly-scroll-wrap{padding:0 40px 20px}
+  .hourly-chart-wrap{margin:0 40px 8px}
+  .hourly-detail-panel{margin:0 40px 8px}
+  .hourly-events{margin:0 40px 12px}
   .hourly-card{flex:0 0 90px}
   .overview-grid{padding:0 40px 20px;gap:14px}
   .clothing-card{margin:0 40px 20px;padding:28px}
@@ -577,13 +594,30 @@ body.loaded #app{display:block}
     </div>
   </div>
 
-  <!-- 12小时预报 -->
+  <!-- 12小时预报折线图 -->
   <div class="section-title"><span class="emoji">🕐</span> 未来12小时</div>
-  <div class="hourly-scroll-wrap">
-    <div class="hourly-scroll" id="hourly-scroll">
-      <!-- 由 JS 动态生成 -->
+  <div class="hourly-chart-wrap">
+    <canvas id="hourly-canvas"></canvas>
+    <div class="hourly-chart-hint" id="chart-hint">👆 点击图表查看逐小时详情</div>
+  </div>
+  <!-- 逐小时详情面板 -->
+  <div class="hourly-detail-panel" id="hourly-detail" style="display:none">
+    <div class="hdp-left">
+      <div class="hdp-time" id="hdp-time">--</div>
+      <div class="hdp-icon" id="hdp-icon">☀️</div>
+    </div>
+    <div class="hdp-center">
+      <div class="hdp-temp" id="hdp-temp">--°C</div>
+      <div class="hdp-desc" id="hdp-desc">--</div>
+    </div>
+    <div class="hdp-stats">
+      <span id="hdp-pop">💧 --%</span>
+      <span id="hdp-humidity">💦 --%</span>
+      <span id="hdp-wind">🌬️ --km/h</span>
     </div>
   </div>
+  <!-- 今日天气变化总结 -->
+  <div class="hourly-events" id="hourly-events"></div>
 
   <!-- 今日概述 -->
   <div class="section-title"><span class="emoji">📊</span> 今日详情</div>
@@ -1077,44 +1111,203 @@ function renderCurrentWeather(hourly, daily) {
   setWeatherAnimation(wc);
 }
 
-function renderHourly(hourly) {
-  const container = document.getElementById('hourly-scroll');
-  container.innerHTML = '';
+/* ===== 12小时折线图绘制 ===== */
+function renderHourlyChart(hourly) {
+  const canvas = document.getElementById('hourly-canvas');
+  if (!canvas) return;
+  const wrap = canvas.parentElement;
+  const W = wrap.clientWidth - 16;
+  const H = 240;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
   if (!hourly?.hourly) return;
 
   const now = new Date();
-  const currentHour = now.getHours();
   const times = hourly.hourly.time;
   const temps = hourly.hourly.temperature_2m;
-  const pops = hourly.hourly.precipitation_probability;
   const codes = hourly.hourly.weathercode;
+  const pops = hourly.hourly.precipitation_probability;
+  const humidities = hourly.hourly.relativehumidity_2m;
+  const winds = hourly.hourly.windspeed_10m;
 
-  // 找到当前小时之后的未来12小时
   let startIdx = times.findIndex(t => {
     const d = new Date(t);
-    return d.getHours() >= currentHour && d.getDate() === now.getDate();
+    return d.getHours() >= now.getHours() && d.getDate() === now.getDate();
   });
   if (startIdx < 0) startIdx = 0;
-
   const count = Math.min(12, times.length - startIdx);
+
+  const data = [];
   for (let i = 0; i < count; i++) {
     const idx = startIdx + i;
-    const t = new Date(times[idx]);
-    const hourStr = `${String(t.getHours()).padStart(2, '0')}:00`;
-    const temp = Math.round(temps[idx]);
-    const pop = pops?.[idx] ?? 0;
-    const wi = getWeatherInfo(codes?.[idx]);
-
-    const card = document.createElement('div');
-    card.className = 'hourly-card';
-    card.innerHTML = `
-      <div class="time">${i === 0 ? '现在' : hourStr}</div>
-      <div class="icon">${wi.emoji}</div>
-      <div class="temp">${temp}°</div>
-      ${pop > 0 ? `<div class="rain-chance">💧${Math.round(pop)}%</div>` : ''}
-    `;
-    container.appendChild(card);
+    data.push({
+      temp: Math.round(temps[idx]),
+      pop: Math.round(pops?.[idx] ?? 0),
+      code: codes?.[idx],
+      humidity: Math.round(humidities?.[idx] ?? 0),
+      wind: Math.round(winds?.[idx] ?? 0),
+      label: i === 0 ? '现在' : `${String(new Date(times[idx]).getHours()).padStart(2,'0')}:00`
+    });
   }
+
+  const pad = { top: 20, bottom: 56, left: 34, right: 8 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+
+  // Y轴自动缩放
+  const tArr = data.map(d => d.temp);
+  const tMin = Math.min(...tArr), tMax = Math.max(...tArr);
+  const tRng = tMax - tMin || 5;
+  const yMin = Math.floor((tMin - tRng * 0.15) / 5) * 5;
+  const yMax = Math.ceil((tMax + tRng * 0.15) / 5) * 5;
+  const yRng = yMax - yMin;
+
+  const toY = t => pad.top + plotH - ((t - yMin) / yRng) * plotH;
+  const toX = i => pad.left + (count > 1 ? (i / (count - 1)) * plotW : plotW / 2);
+
+  ctx.clearRect(0, 0, W, H);
+
+  // 网格
+  ctx.strokeStyle = 'rgba(126,200,227,0.12)';
+  ctx.lineWidth = 1;
+  ctx.font = '10px sans-serif';
+  ctx.fillStyle = '#aaa';
+  ctx.textAlign = 'right';
+  for (let t = yMin; t <= yMax; t += 5) {
+    const y = toY(t);
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    if (t !== yMin && t !== yMax) ctx.fillText(t + '°', pad.left - 4, y + 3);
+  }
+
+  // 面积填充
+  ctx.beginPath();
+  ctx.moveTo(toX(0), pad.top + plotH);
+  for (let i = 0; i < data.length; i++) {
+    const x = toX(i), y = toY(data[i].temp);
+    i === 0 ? ctx.lineTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.lineTo(toX(data.length - 1), pad.top + plotH);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
+  grad.addColorStop(0, 'rgba(126,200,227,0.2)');
+  grad.addColorStop(1, 'rgba(126,200,227,0.02)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // 温度曲线
+  ctx.beginPath();
+  ctx.strokeStyle = '#7EC8E3';
+  ctx.lineWidth = 3;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  for (let i = 0; i < data.length; i++) {
+    const x = toX(i), y = toY(data[i].temp);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // 数据点 + 温度数值
+  for (let i = 0; i < data.length; i++) {
+    const x = toX(i), y = toY(data[i].temp);
+    ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.strokeStyle = '#7EC8E3'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(data[i].temp + '°', x, y - 10);
+  }
+
+  // 时间标签 + 天气图标
+  ctx.textAlign = 'center';
+  for (let i = 0; i < data.length; i++) {
+    const x = toX(i), d = data[i], wi = getWeatherInfo(d.code);
+    ctx.font = '11px "PingFang SC",sans-serif';
+    ctx.fillStyle = '#666';
+    ctx.fillText(d.label, x, pad.top + plotH + 14);
+    ctx.font = '18px sans-serif';
+    ctx.fillText(wi.emoji, x, pad.top + plotH + 40);
+  }
+
+  // 降水概率柱（底部）
+  const barBot = H - 4, barMax = 10;
+  for (let i = 0; i < data.length; i++) {
+    const pop = data[i].pop;
+    if (pop > 0) {
+      const x = toX(i), barH = (pop / 100) * barMax;
+      const w = Math.max(4, (plotW / count) * 0.28);
+      ctx.fillStyle = pop > 60 ? 'rgba(52,152,219,0.65)' : 'rgba(52,152,219,0.25)';
+      ctx.fillRect(x - w / 2, barBot - barH, w, barH);
+    }
+  }
+
+  // 储存数据供交互使用
+  canvas._chartData = data;
+  canvas._toX = toX;
+  canvas._count = count;
+
+  // 生成天气变化总结
+  generateHourlyEvents(data);
+  // 设置点击交互
+  setupChartInteraction(canvas, data, toX);
+}
+
+/* 图表点击交互 */
+function setupChartInteraction(canvas, data, toX) {
+  const getIdx = clientX => {
+    const rect = canvas.getBoundingClientRect();
+    const x = clientX - rect.left;
+    let minD = Infinity, idx = -1;
+    for (let i = 0; i < data.length; i++) {
+      const d = Math.abs(toX(i) - x);
+      if (d < minD) { minD = d; idx = i; }
+    }
+    return idx;
+  };
+  const show = idx => {
+    if (idx < 0 || idx >= data.length) return;
+    const d = data[idx], wi = getWeatherInfo(d.code);
+    document.getElementById('hdp-time').textContent = d.label;
+    document.getElementById('hdp-icon').textContent = wi.emoji;
+    document.getElementById('hdp-temp').textContent = d.temp + '°C';
+    document.getElementById('hdp-desc').textContent = wi.desc;
+    document.getElementById('hdp-pop').textContent = '💧 ' + d.pop + '%';
+    document.getElementById('hdp-humidity').textContent = '💦 ' + (d.humidity || '--') + '%';
+    document.getElementById('hdp-wind').textContent = '🌬️ ' + (d.wind || '--') + 'km/h';
+    document.getElementById('hourly-detail').style.display = 'flex';
+    document.getElementById('chart-hint').style.display = 'none';
+  };
+  canvas.addEventListener('click', e => show(getIdx(e.clientX)));
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    show(getIdx(e.touches[0].clientX));
+  }, { passive: false });
+}
+
+/* 今日天气变化总结 */
+function generateHourlyEvents(data) {
+  const el = document.getElementById('hourly-events');
+  const events = [];
+  for (let i = 1; i < data.length; i++) {
+    const p = data[i - 1], c = data[i];
+    const pw = getWeatherInfo(p.code), cw = getWeatherInfo(c.code);
+    if (p.code !== c.code && pw.bg !== cw.bg)
+      events.push(`${c.label} ${cw.emoji} 转为${cw.desc}`);
+    if (p.pop <= 60 && c.pop > 60)
+      events.push(`${c.label} 💧 降水概率升至${c.pop}%`);
+    if (p.pop <= 30 && c.pop > 30 && c.pop <= 60)
+      events.push(`${c.label} 🌂 可能有雨`);
+  }
+  if (events.length > 0) {
+    el.innerHTML = '<div class="events-title">⏱ 今日天气变化</div>' +
+      events.map(e => `<div class="event-item">${e}</div>`).join('');
+    el.style.display = 'block';
+  } else el.style.display = 'none';
 }
 
 function renderOverview(hourly, daily) {
@@ -1267,7 +1460,7 @@ function renderAll() {
   if (!hourly) return;
 
   renderCurrentWeather(hourly, daily);
-  renderHourly(hourly);
+  renderHourlyChart(hourly);
   renderOverview(hourly, daily);
   renderClothing(hourly, daily);
 }
@@ -1622,7 +1815,7 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 
 function observeCards() {
-  document.querySelectorAll('.hourly-card, .overview-item, .clothing-card, .day-card').forEach(el => {
+  document.querySelectorAll('.overview-item, .clothing-card, .day-card').forEach(el => {
     el.style.opacity = '0';
     observer.observe(el);
   });
