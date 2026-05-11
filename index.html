@@ -1054,7 +1054,7 @@ async function searchCity(name) {
     if (res.ok) {
       const data = await res.json();
       if (data.length > 0) {
-        return { name: data[0].display_name.split(',')[0], lat: data[0].lat, lon: data[0].lon };
+        return { name: data[0].display_name.split(',')[0], lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
       }
     }
   } catch {}
