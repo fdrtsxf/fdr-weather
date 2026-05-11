@@ -1560,6 +1560,7 @@ async function setLocation(lat, lon, name, located = false) {
   lat = Number(lat); lon = Number(lon);
   state.location = { lat, lon, name };
   state.isLocated = located;
+  state.daily14 = null; // 切换城市时清空14天缓存
   saveLocation({ lat, lon, name, located });
 
   document.getElementById('city-name').textContent = name;
