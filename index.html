@@ -978,11 +978,26 @@ async function fetchDaily(lat, lon, days = 3) {
 }
 
 async function reverseGeocode(lat, lon) {
-  const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}`;
-  const data = await fetchWithTimeout(url);
-  if (data.results && data.results.length > 0) {
-    return data.results[0].name;
-  }
+  // 尝试 Open-Meteo 地理编码
+  try {
+    const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}`;
+    const data = await fetchWithTimeout(url);
+    if (data.results && data.results.length > 0) {
+      return data.results[0].name;
+    }
+  } catch {}
+  // 备用：尝试 Nominatim（OpenStreetMap）
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10&accept-language=zh`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'fdr-weather/1.0' }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const addr = data.address;
+      if (addr) return addr.city || addr.town || addr.county || addr.state || '当前位置';
+    }
+  } catch {}
   return null;
 }
 
@@ -1340,7 +1355,7 @@ async function requestGeolocation() {
     });
     const { latitude, longitude } = pos.coords;
     // 反向地理编码
-    let cityName = '当前位置';
+    let cityName = `📍${latitude.toFixed(2)},${longitude.toFixed(2)}`;
     try {
       const name = await reverseGeocode(latitude, longitude);
       if (name) cityName = name;
