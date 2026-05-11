@@ -282,6 +282,8 @@ body.loaded #app{display:block}
 .weather-hero-temp{font-size:52px;font-weight:200;letter-spacing:-2px;line-height:1.1;color:var(--text-dark)}
 .weather-hero-temp span{font-size:22px;font-weight:300}
 .weather-hero-desc{font-size:15px;margin-top:2px;color:var(--text-gray)}
+.weather-badges{display:flex;gap:8px;justify-content:center;margin-top:4px;flex-wrap:wrap}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);color:var(--text-gray);white-space:nowrap}
 .weather-hero-highlow{font-size:13px;color:var(--text-gray);margin-top:2px;display:flex;gap:16px;justify-content:center}
 
 /* ===== 12小时预报横向滑动 ===== */
@@ -591,6 +593,10 @@ body.loaded #app{display:block}
       <div class="weather-hero-icon" id="weather-icon">☀️</div>
       <div class="weather-hero-temp" id="current-temp">--<span>°C</span></div>
       <div class="weather-hero-desc" id="weather-desc">--</div>
+      <div class="weather-badges" id="weather-badges">
+        <span class="badge" id="badge-uv">☀️ UV --</span>
+        <span class="badge" id="badge-aqi">🌬️ 空气 --</span>
+      </div>
       <div class="weather-hero-highlow" id="high-low">
         <span>最高 --°C</span>
         <span>最低 --°C</span>
@@ -700,6 +706,7 @@ const state = {
   hourly: null,         // 原始24h hourly 数据
   daily: null,          // daily 数据（3天）
   daily14: null,        // daily 数据（14天）
+  aqi: null,            // 空气质量指数（EAQI）
   lastHourlyKey: null,  // 缓存key
   lastDailyKey: null,
 };
@@ -771,7 +778,7 @@ function hasWeatherChange(hourlyData) {
   return hadClear && hadSevere;
 }
 
-function generateClothing(temp, pop, wind, humidity, uv, weatherCode, tempMax, tempMin, hourlyData) {
+function generateClothing(temp, pop, wind, humidity, uv, weatherCode, tempMax, tempMin, hourlyData, aqi) {
   const layers = [];
   const modifiers = [];
 
@@ -813,6 +820,13 @@ function generateClothing(temp, pop, wind, humidity, uv, weatherCode, tempMax, t
     modifiers.push('今日天气有变，建议随身带伞，内搭+防水外套组合');
   }
 
+  // ---- 第四层：空气质量 ----
+  if (aqi !== null && aqi !== undefined) {
+    if (aqi > 100) modifiers.push('空气污染严重，建议佩戴口罩，减少户外活动');
+    else if (aqi > 60) modifiers.push('空气质量较差，敏感人群建议佩戴口罩');
+    else if (aqi > 40) modifiers.push('空气质量一般，户外活动注意');
+  }
+
   // ---- 合成输出 ----
   const allParts = [...layers, ...modifiers];
   const summary = generateSummary(temp, allParts);
@@ -828,6 +842,7 @@ function generateSummary(temp, parts) {
   const hasRain = parts.some(p => p.includes('伞') || p.includes('防水'));
   const hasWind = parts.some(p => p.includes('防风'));
   const hasSun = parts.some(p => p.includes('防晒'));
+  const hasMask = parts.some(p => p.includes('口罩'));
   let summary = '今天';
   if (temp <= 5) summary += '超冷，注意保暖';
   else if (temp <= 15) summary += '偏凉';
@@ -838,25 +853,28 @@ function generateSummary(temp, parts) {
   if (hasRain) summary += '·带伞';
   if (hasWind) summary += '·防风';
   if (hasSun) summary += '·防晒';
+  if (hasMask) summary += '·戴口罩';
   summary += '哦~';
 
   return summary;
 }
 
 // 获取穿搭 emoji 组合
-function getClothingEmoji(temp, weatherCode, pop) {
+function getClothingEmoji(temp, weatherCode, pop, aqi) {
+  const hasMask = aqi !== null && aqi > 60;
   const isSnow = weatherCode !== undefined && (
     (weatherCode >= 71 && weatherCode <= 77) ||
     (weatherCode >= 85 && weatherCode <= 86) ||
     weatherCode === 66 || weatherCode === 67
   );
-  if (isSnow) return '🧥🧤☂️';
-  if (pop > 60) return '🧥☂️';
-  if (temp <= 0) return '🧥🧤🧣';
-  if (temp <= 10) return '🧥🧣';
-  if (temp <= 20) return '🧥👖';
-  if (temp <= 28) return '👕👖';
-  return '👕🩳🕶️';
+  const mask = hasMask ? '😷' : '';
+  if (isSnow) return '🧥🧤☂️' + mask;
+  if (pop > 60) return '🧥☂️' + mask;
+  if (temp <= 0) return '🧥🧤🧣' + mask;
+  if (temp <= 10) return '🧥🧣' + mask;
+  if (temp <= 20) return '🧥👖' + mask;
+  if (temp <= 28) return '👕👖' + mask;
+  return '👕🩳🕶️' + mask;
 }
 
 // ===== 4. 动态背景系统 =====
@@ -1001,6 +1019,14 @@ async function fetchHourly(lat, lon) {
   return data;
 }
 
+async function fetchAirQuality(lat, lon) {
+  try {
+    const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=european_aqi`;
+    const data = await fetchWithTimeout(url, 5000);
+    return data?.current?.european_aqi ?? null;
+  } catch { return null }
+}
+
 async function fetchDaily(lat, lon, days = 3) {
   const key = getCacheKey(lat, lon, `daily_${days}`);
   const cached = readCache(key);
@@ -1106,6 +1132,27 @@ function renderCurrentWeather(hourly, daily) {
     document.getElementById('high-low').innerHTML =
       `<span>最高 ${Math.round(daily.daily.temperature_2m_max[0])}°C</span>` +
       `<span>最低 ${Math.round(daily.daily.temperature_2m_min[0])}°C</span>`;
+  }
+
+  // UV 指数徽章
+  const uv = hourly.hourly.uv_index?.[idx];
+  const badgeUV = document.getElementById('badge-uv');
+  if (uv !== undefined && uv !== null) {
+    const u = Math.round(uv);
+    const level = u <= 2 ? '🟢 低' : u <= 5 ? '🟡 中等' : u <= 7 ? '🟠 高' : '🔴 极高';
+    badgeUV.textContent = `☀️ UV ${u} ${level}`;
+  } else {
+    badgeUV.textContent = '☀️ UV --';
+  }
+
+  // 空气质量徽章
+  const aqi = state.aqi;
+  const badgeAQI = document.getElementById('badge-aqi');
+  if (aqi !== null && aqi !== undefined) {
+    const level = aqi <= 20 ? '🟢 优' : aqi <= 40 ? '🟡 良' : aqi <= 60 ? '🟠 轻度' : aqi <= 80 ? '🔴 中度' : '⚫ 重度';
+    badgeAQI.textContent = `🌬️ ${Math.round(aqi)} ${level}`;
+  } else {
+    badgeAQI.textContent = '🌬️ 空气 --';
   }
 
   // 动态背景
@@ -1373,10 +1420,10 @@ function renderClothing(hourly, daily) {
     tempMin = daily.daily.temperature_2m_min[0];
   }
 
-  const advice = generateClothing(temp, pop, wind, humidity, uv, wc, tempMax, tempMin, hourly);
+  const advice = generateClothing(temp, pop, wind, humidity, uv, wc, tempMax, tempMin, hourly, state.aqi);
   document.getElementById('clothing-summary').textContent = advice.summary;
   document.getElementById('clothing-detail').textContent = advice.detail;
-  document.querySelector('.clothing-emoji').textContent = getClothingEmoji(temp, wc, pop);
+  document.querySelector('.clothing-emoji').textContent = getClothingEmoji(temp, wc, pop, state.aqi);
 }
 
 function renderDaily14(data) {
@@ -1481,12 +1528,14 @@ async function loadWeatherData(lat, lon, retries = CONFIG.maxRetries) {
     try {
       if (attempt > 0) showToast(`正在重试...(${attempt}/${retries})`);
       else showToast('正在获取天气数据...');
-      const [hourly, daily] = await Promise.all([
+      const [hourly, daily, aqi] = await Promise.all([
         fetchHourly(lat, lon),
         fetchDaily(lat, lon, 3),
+        fetchAirQuality(lat, lon),
       ]);
       state.hourly = hourly;
       state.daily = daily;
+      state.aqi = aqi;
       renderAll();
       showLoadingUI(false);
       return;
