@@ -204,9 +204,9 @@ body.loaded #app{display:block}
 
 /* ===== 当前天气大字区 + 动态背景 ===== */
 .weather-hero{
-  position:relative;padding:10px 20px 30px;margin:0 16px 16px;
+  position:relative;padding:8px 16px 14px;margin:0 16px 8px;
   border-radius:var(--radius-lg);
-  overflow:hidden;min-height:260px;
+  overflow:hidden;min-height:150px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   transition:background 0.8s;
 }
@@ -278,31 +278,31 @@ body.loaded #app{display:block}
 .weather-hero-content{
   position:relative;z-index:2;text-align:center;
 }
-.weather-hero-icon{font-size:72px;margin-bottom:8px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.08));animation:float 4s ease-in-out infinite}
-.weather-hero-temp{font-size:72px;font-weight:200;letter-spacing:-2px;line-height:1;color:var(--text-dark)}
-.weather-hero-temp span{font-size:28px;font-weight:300}
-.weather-hero-desc{font-size:18px;margin-top:8px;color:var(--text-gray)}
-.weather-hero-highlow{font-size:14px;color:var(--text-gray);margin-top:4px;display:flex;gap:16px;justify-content:center}
+.weather-hero-icon{font-size:48px;margin-bottom:2px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.08));animation:float 4s ease-in-out infinite}
+.weather-hero-temp{font-size:52px;font-weight:200;letter-spacing:-2px;line-height:1.1;color:var(--text-dark)}
+.weather-hero-temp span{font-size:22px;font-weight:300}
+.weather-hero-desc{font-size:15px;margin-top:2px;color:var(--text-gray)}
+.weather-hero-highlow{font-size:13px;color:var(--text-gray);margin-top:2px;display:flex;gap:16px;justify-content:center}
 
 /* ===== 12小时预报横向滑动 ===== */
 .section-title{
-  font-size:16px;font-weight:600;padding:0 20px;margin-bottom:12px;
-  display:flex;align-items:center;gap:8px;
+  font-size:14px;font-weight:600;padding:0 20px;margin-bottom:6px;
+  display:flex;align-items:center;gap:6px;
 }
-.section-title .emoji{font-size:18px}
+.section-title .emoji{font-size:15px}
 /* ===== 12小时折线图 ===== */
 .hourly-chart-wrap{
-  margin:0 16px 8px;background:var(--bg-card);
-  border-radius:var(--radius-md);padding:12px 8px 4px;
+  margin:0 16px 4px;background:var(--bg-card);
+  border-radius:var(--radius-md);padding:6px 6px 0;
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   box-shadow:var(--shadow-card);position:relative;
 }
-#hourly-canvas{width:100%;height:240px;display:block;touch-action:none}
-.hourly-chart-hint{text-align:center;font-size:12px;color:var(--text-gray);padding:2px 0 6px;opacity:0.7}
+#hourly-canvas{width:100%;height:160px;display:block;touch-action:none}
+.hourly-chart-hint{text-align:center;font-size:11px;color:var(--text-gray);padding:1px 0 3px;opacity:0.6}
 
 /* 逐小时详情面板 */
 .hourly-detail-panel{
-  margin:0 16px 8px;padding:14px 18px;
+  margin:0 16px 4px;padding:10px 14px;
   background:linear-gradient(135deg,rgba(255,255,255,0.9),rgba(240,248,252,0.9));
   border-radius:var(--radius-md);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
@@ -310,68 +310,69 @@ body.loaded #app{display:block}
   display:flex;align-items:center;gap:16px;flex-wrap:wrap;
   animation:fadeInUp 0.25s ease;
 }
-.hdp-left{display:flex;align-items:center;gap:8px}
-.hdp-time{font-size:15px;font-weight:600;white-space:nowrap}
-.hdp-icon{font-size:32px}
-.hdp-center{flex:1;min-width:80px}
-.hdp-temp{font-size:22px;font-weight:600}
-.hdp-desc{font-size:13px;color:var(--text-gray);margin-top:2px}
-.hdp-stats{display:flex;gap:10px;font-size:13px;color:var(--text-gray);flex-wrap:wrap}
+.hdp-left{display:flex;align-items:center;gap:6px}
+.hdp-time{font-size:13px;font-weight:600;white-space:nowrap}
+.hdp-icon{font-size:24px}
+.hdp-center{flex:1;min-width:60px}
+.hdp-temp{font-size:18px;font-weight:600}
+.hdp-desc{font-size:12px;color:var(--text-gray)}
+.hdp-stats{display:flex;gap:8px;font-size:12px;color:var(--text-gray);flex-wrap:wrap}
 
 /* 天气变化总结 */
 .hourly-events{
-  margin:0 16px 12px;padding:12px 16px;
+  margin:0 16px 6px;padding:8px 14px;
   background:var(--bg-card);border-radius:var(--radius-md);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   box-shadow:var(--shadow-card);display:none;
 }
-.events-title{font-size:14px;font-weight:600;margin-bottom:8px;color:var(--primary-dark)}
-.event-item{font-size:13px;color:var(--text-gray);padding:4px 0;padding-left:4px;line-height:1.5}
+.events-title{font-size:12px;font-weight:600;margin-bottom:4px;color:var(--primary-dark)}
+.event-item{font-size:12px;color:var(--text-gray);padding:2px 0;line-height:1.4}
 .event-item::before{content:'▸ ';color:var(--primary)}
 
 /* ===== 今日概述卡片 ===== */
 .overview-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:10px;
-  padding:0 16px 16px;
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;
+  padding:0 16px 6px;
 }
 .overview-item{
   background:var(--bg-card);border-radius:var(--radius-md);
-  padding:16px;text-align:center;
+  padding:10px 8px;text-align:center;
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   box-shadow:var(--shadow-card);
 }
-.overview-item .label{font-size:12px;color:var(--text-gray);margin-bottom:6px}
-.overview-item .value{font-size:22px;font-weight:600;color:var(--text-dark)}
-.overview-item .unit{font-size:13px;color:var(--text-gray);margin-left:2px}
-.overview-item .sub{font-size:13px;color:var(--text-gray);margin-top:2px}
+.overview-item .label{font-size:11px;color:var(--text-gray);margin-bottom:2px}
+.overview-item .value{font-size:18px;font-weight:600;color:var(--text-dark)}
+.overview-item .unit{font-size:11px;color:var(--text-gray);margin-left:2px}
+.overview-item .sub{font-size:11px;color:var(--text-gray)}
 
 /* ===== 穿搭建议卡（最显眼） ===== */
 .clothing-card{
-  margin:0 16px 16px;
+  margin:0 16px 8px;
   background:linear-gradient(135deg,rgba(255,255,255,0.85),rgba(255,245,248,0.85));
   border-radius:var(--radius-lg);
-  padding:24px;
+  padding:14px 18px;
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   box-shadow:0 8px 32px rgba(255,181,194,0.2);
-  display:flex;gap:16px;align-items:center;
+  display:flex;gap:12px;align-items:center;
   transition:transform 0.3s;
+  min-height:56px;
 }
 .clothing-card:active{transform:scale(0.98)}
-.clothing-emoji{font-size:48px;flex-shrink:0;animation:float 3s ease-in-out infinite}
+.clothing-emoji{font-size:36px;flex-shrink:0;animation:float 3s ease-in-out infinite}
 .clothing-content{flex:1;min-width:0}
-.clothing-summary{font-size:17px;font-weight:600;color:var(--text-dark);margin-bottom:6px}
-.clothing-detail{font-size:14px;color:var(--text-gray);line-height:1.7}
+.clothing-summary{font-size:15px;font-weight:600;color:var(--text-dark);margin-bottom:2px}
+.clothing-detail{font-size:12px;color:var(--text-gray);line-height:1.5}
 
 /* ===== 14天按钮 ===== */
-.btn-14day-wrap{padding:0 16px 12px;text-align:center}
+.btn-14day-wrap{padding:0 16px 8px;text-align:center}
 .btn-14day{
-  width:100%;max-width:360px;padding:16px 24px;
+  width:100%;max-width:360px;padding:10px 20px;
   border-radius:50px;
   background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-  color:#fff;font-size:16px;font-weight:600;
-  box-shadow:0 6px 24px rgba(126,200,227,0.3);
+  color:#fff;font-size:14px;font-weight:600;
+  box-shadow:0 4px 16px rgba(126,200,227,0.25);
   transition:transform 0.3s,box-shadow 0.3s;
-  min-height:52px;
+  min-height:44px;
 }
 .btn-14day:active{transform:scale(0.95)}
 .btn-14day .arrow{display:inline-block;transition:transform 0.3s;margin-left:6px}
@@ -510,12 +511,15 @@ body.loaded #app{display:block}
 
 /* ===== 响应式 ===== */
 @media(min-width:768px){
-  .weather-hero{min-height:320px;margin:0 40px 20px}
-  .weather-hero-temp{font-size:96px}
-  .weather-hero-icon{font-size:88px}
-  .hourly-chart-wrap{margin:0 40px 8px}
-  .hourly-detail-panel{margin:0 40px 8px}
-  .hourly-events{margin:0 40px 12px}
+  .weather-hero{min-height:180px;margin:0 40px 8px}
+  .weather-hero-temp{font-size:64px}
+  .weather-hero-icon{font-size:56px}
+  .hourly-chart-wrap{margin:0 40px 4px}
+  .hourly-detail-panel{margin:0 40px 4px}
+  .hourly-events{margin:0 40px 6px}
+  .clothing-card{margin:0 40px 8px}
+  .overview-grid{padding:0 40px 6px}
+  .btn-14day-wrap{padding:0 40px 8px}
   .hourly-card{flex:0 0 90px}
   .overview-grid{padding:0 40px 20px;gap:14px}
   .clothing-card{margin:0 40px 20px;padding:28px}
@@ -594,11 +598,21 @@ body.loaded #app{display:block}
     </div>
   </div>
 
+  <!-- 穿搭建议（上移！） -->
+  <div class="section-title"><span class="emoji">👗</span> 今日穿搭建议</div>
+  <div class="clothing-card" id="clothing-card">
+    <div class="clothing-emoji" id="clothing-emoji">🧥</div>
+    <div class="clothing-content">
+      <div class="clothing-summary" id="clothing-summary">加载中...</div>
+      <div class="clothing-detail" id="clothing-detail"></div>
+    </div>
+  </div>
+
   <!-- 12小时预报折线图 -->
   <div class="section-title"><span class="emoji">🕐</span> 未来12小时</div>
   <div class="hourly-chart-wrap">
     <canvas id="hourly-canvas"></canvas>
-    <div class="hourly-chart-hint" id="chart-hint">👆 点击图表查看逐小时详情</div>
+    <div class="hourly-chart-hint" id="chart-hint">👆 点击查看逐小时详情</div>
   </div>
   <!-- 逐小时详情面板 -->
   <div class="hourly-detail-panel" id="hourly-detail" style="display:none">
@@ -628,19 +642,9 @@ body.loaded #app{display:block}
     <div class="overview-item"><div class="label">降水概率</div><div class="value"><span id="ov-pop">--</span><span class="unit">%</span></div></div>
   </div>
 
-  <!-- 穿搭建议 -->
-  <div class="section-title"><span class="emoji">👗</span> 今日穿搭建议</div>
-  <div class="clothing-card" id="clothing-card">
-    <div class="clothing-emoji" id="clothing-emoji">🧥</div>
-    <div class="clothing-content">
-      <div class="clothing-summary" id="clothing-summary">加载中...</div>
-      <div class="clothing-detail" id="clothing-detail"></div>
-    </div>
-  </div>
-
   <!-- 14天按钮 -->
   <div class="btn-14day-wrap">
-    <button class="btn-14day" id="btn-14day">📅 查看14天预报 <span class="arrow">▾</span></button>
+    <button class="btn-14day" id="btn-14day">📅 14天预报 <span class="arrow">▾</span></button>
   </div>
 
 </div><!-- /app -->
@@ -1117,7 +1121,7 @@ function renderHourlyChart(hourly) {
   if (!canvas) return;
   const wrap = canvas.parentElement;
   const W = wrap.clientWidth - 16;
-  const H = 240;
+  const H = 160;
   const dpr = window.devicePixelRatio || 1;
   canvas.width = W * dpr;
   canvas.height = H * dpr;
