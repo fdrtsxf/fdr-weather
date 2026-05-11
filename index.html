@@ -956,7 +956,7 @@ function setWeatherAnimation(weatherCode) {
 
 // ===== 5. API 服务（带 localStorage 缓存） =====
 function getCacheKey(lat, lon, type) {
-  return `fdr_${type}_${lat.toFixed(2)}_${lon.toFixed(2)}`;
+  return `fdr_${type}_${Number(lat).toFixed(2)}_${Number(lon).toFixed(2)}`;
 }
 
 function readCache(key) {
@@ -1542,7 +1542,13 @@ async function load14DayData(lat, lon) {
 function getSavedLocation() {
   try {
     const raw = localStorage.getItem('fdr_location');
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const loc = JSON.parse(raw);
+    if (loc && loc.lat && loc.lon) {
+      loc.lat = Number(loc.lat);
+      loc.lon = Number(loc.lon);
+    }
+    return loc;
   } catch { return null }
 }
 
@@ -1551,6 +1557,7 @@ function saveLocation(loc) {
 }
 
 async function setLocation(lat, lon, name, located = false) {
+  lat = Number(lat); lon = Number(lon);
   state.location = { lat, lon, name };
   state.isLocated = located;
   saveLocation({ lat, lon, name, located });
