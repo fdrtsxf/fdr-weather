@@ -1035,6 +1035,7 @@ function renderCurrentWeather(hourly, daily) {
   }
 
   // 动态背景
+  const now = new Date();
   const hero = document.getElementById('weather-hero');
   hero.style.background = getBackgroundGradient(wc, now.getHours());
   setWeatherAnimation(wc);
